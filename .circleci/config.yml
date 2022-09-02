@@ -191,7 +191,7 @@ jobs:
           command: yum install -y tar gzip
       - run:
          name: display directory files
-         command: ls ./.circleci/files
+         command: ls .
       - run:
           name: Deploy backend infrastructure
           working_directory: ./.circleci/files
