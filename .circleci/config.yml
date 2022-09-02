@@ -167,7 +167,7 @@ jobs:
       - run:
           name: Check Frontend against security vulnerabilities
           working_directory: ./frontend
-          command: rm package-lock.json && npm install && npm audit --audit-level=critical && npm audit fix
+          command: rm package-lock.json && npm install && npm audit fix && npm audit --audit-level=critical
 
   scan-backend:
     docker:
