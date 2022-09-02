@@ -167,7 +167,7 @@ jobs:
       - run:
           name: Check Frontend against security vulnerabilities
           working_directory: ./frontend
-          command: npm audit fix && npm install oauth-sign@^0.9.0 oauth-sign@^0.9.0 && npm audit --audit-level=critical
+          command: npm install && npm audit fix && npm audit --audit-level=critical
 
   scan-backend:
     docker:
