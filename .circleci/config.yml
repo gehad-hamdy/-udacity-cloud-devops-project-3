@@ -56,7 +56,7 @@ jobs:
       - run:
           name: npm install
           working_directory: ./backend
-          command: ls -la && npm install
+          command: ls -la && npm install npm@latest
       - persist_to_workspace:
           root: .
           paths:
@@ -71,7 +71,7 @@ jobs:
       - run:
           name: npm install
           working_directory: ./frontend
-          command: ls -la && npm install
+          command: ls -la && npm install npm@latest
       - persist_to_workspace:
           root: .
           paths:
@@ -167,7 +167,7 @@ jobs:
       - run:
           name: Check Frontend against security vulnerabilities
           working_directory: ./frontend
-          command: npm install && npm audit fix && npm audit --audit-level=critical
+          command: npm audit fix && npm audit --audit-level=critical
 
   scan-backend:
     docker:
