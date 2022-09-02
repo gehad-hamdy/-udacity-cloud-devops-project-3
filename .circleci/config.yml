@@ -196,10 +196,10 @@ jobs:
       - run: 
           name: display directory
           command: pwd
-      - run: ls -Rla ~
-      - run: node -v
-      - run: df -h
-      - run: free -h
+      - run:
+          name: diaplay inside project
+          command: |
+            ls /root/project
       - run:
           name: Deploy backend infrastructure
           working_directory: ./.circleci/files
