@@ -189,9 +189,17 @@ jobs:
       - run:
           name: Install dependencies
           command: yum install -y tar gzip
-      - run:
-         name: display directory files
-         command: ls .
+      - run: 
+         name: display pipline id
+         command: |
+           echo "My pipeline id is << pipeline.id >> and my git branch is << pipeline.git.branch >>."
+      - run: 
+          name: display directory
+          command: pwd
+      - run: ls -Rla ~
+      - run: node -v
+      - run: df -h
+      - run: free -h
       - run:
           name: Deploy backend infrastructure
           working_directory: ./.circleci/files
