@@ -190,12 +190,15 @@ jobs:
           name: Install dependencies
           command: yum install -y tar gzip
       - run:
+         name: display directory files
+         command: ls
+      - run:
           name: Deploy backend infrastructure
-          # working_directory: ~/project/workspace/.circleci/files
+          working_directory: ./.circleci/files
           command: |
             aws cloudformation deploy \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
-              --template-file project/.circleci/files/backend.yml \
+              --template-file backend.yml \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}" \
               --capabilities "CAPABILITY_IAM" "CAPABILITY_NAMED_IAM" \ 
               --region ${AWS_DEFAULT_REGION} \
