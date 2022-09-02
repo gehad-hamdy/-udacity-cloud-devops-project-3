@@ -19,7 +19,7 @@ commands:
       - run:
           name: Destroy udapeople frontend stack and S3 bucket
           command: |
-            aws s3 rm s3://udapeople-<< parameters.id >> --recursive
+            aws s3 rm s3://udapeople-13014728547 --recursive
             aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.id >>
           environment:
               TERM: xterm-256color
@@ -195,7 +195,7 @@ jobs:
           command: |
             aws cloudformation deploy \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
-              --template-file .circleci/files/backend.yml \
+              --template-file .circleci/files/backend.yaml \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}" \
               --capabilities "CAPABILITY_IAM" "CAPABILITY_NAMED_IAM" \ 
               --region ${AWS_DEFAULT_REGION} \
