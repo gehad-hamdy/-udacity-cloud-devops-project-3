@@ -195,7 +195,7 @@ jobs:
           command: |
             aws cloudformation deploy \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
-              --template-file ~/project/workspace/.circleci/files/backend.yml \
+              --template-file project/.circleci/files/backend.yml \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}" \
               --capabilities "CAPABILITY_IAM" "CAPABILITY_NAMED_IAM" \ 
               --region ${AWS_DEFAULT_REGION} \
