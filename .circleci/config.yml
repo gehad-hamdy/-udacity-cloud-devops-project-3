@@ -48,35 +48,6 @@ commands:
           when: << parameters.when >>
             
 jobs:
-  install-backend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - run:
-          name: npm install
-          working_directory: ./backend
-          command: ls -la && npm install
-      - persist_to_workspace:
-          root: .
-          paths:
-            - backend/node_modules
-
-
-  install-frontend:
-   docker:
-      - image: circleci/node:13.8.0
-   steps:
-      - checkout
-      - run:
-          name: npm install
-          working_directory: ./frontend
-          command: ls -la && npm install
-      - persist_to_workspace:
-          root: .
-          paths:
-            - frontend/node_modules
-
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -86,6 +57,11 @@ jobs:
           keys: [frontend-build]
       - attach_workspace:
           at: .    
+      - run:
+          name: Install dependencies
+          command: |
+            cd frontend
+            npm install    
       - run:
           name: Build front-end
           working_directory: ./frontend
@@ -104,6 +80,11 @@ jobs:
           keys: [backend-build]
       - attach_workspace:
           at: .    
+      - run:
+          name: Install dependencies
+          command: |
+            cd backend
+            npm install    
       - run:
           name: Back-end build
           working_directory: ./backend
@@ -165,9 +146,14 @@ jobs:
       - attach_workspace:
           at: .
       - run:
+          name: Install dependencies
+          command: |
+            cd frontend
+            npm install    
+      - run:
           name: Check Frontend against security vulnerabilities
           working_directory: ./frontend
-          command: npm audit fix && npm audit --audit-level=critical
+          command: npm audit fix --audit-level=critical --force
 
   scan-backend:
     docker:
@@ -177,9 +163,14 @@ jobs:
       - attach_workspace:
           at: .
       - run:
+          name: Install dependencies
+          command: |
+            cd backend
+            npm install    
+      - run:
           name: Check Backend against security vulnerabilities
           working_directory: ./backend
-          command: npm audit fix && npm audit --audit-level=critical
+          command: npm audit fix --audit-level=critical --force
 
   deploy-infrastructure:
     docker:
@@ -454,12 +445,8 @@ jobs:
 workflows:
   default:
     jobs:
-      - install-frontend
-      - install-backend
-      - build-frontend:
-          requires: [install-frontend]
-      - build-backend:
-          requires: [install-backend]
+      - build-frontend
+      - build-backend
       - test-frontend:
           requires: [build-frontend]
       - test-backend:
