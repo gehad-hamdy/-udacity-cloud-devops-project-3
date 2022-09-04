@@ -203,7 +203,7 @@ jobs:
       - run:
           name: diaplay inside project
           command: |
-            ls ./.circleci/files
+            ls .
       - run:
           name: Deploy backend infrastructure
           working_directory: ./.circleci/files
