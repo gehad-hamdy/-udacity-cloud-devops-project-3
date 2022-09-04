@@ -239,9 +239,7 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      - destroy-environment:
-          id: ${CIRCLE_WORKFLOW_ID}
-          when: on_fail  
+      - destroy-environment
 
   configure-infrastructure:
     docker:
@@ -266,9 +264,7 @@ jobs:
             ls -la
             cat inventory.txt
             ansible-playbook -i inventory.txt configure-server.yml
-      - destroy-environment:
-          id: ${CIRCLE_WORKFLOW_ID}
-          when: on_fail
+      - destroy-environment
 
   run-migrations:
     docker:
@@ -303,9 +299,7 @@ jobs:
               curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data "failure" https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/DB_MIGRATION_${CIRCLE_WORKFLOW_ID}
             fi
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID}"
-      - destroy-environment:
-          id: ${CIRCLE_WORKFLOW_ID}
-          when: on_fail
+      - destroy-environment
 
   deploy-frontend:
     docker:
@@ -338,12 +332,8 @@ jobs:
           root: .
           paths:
             - frontend/dist
-      - destroy-environment:
-          id: ${CIRCLE_WORKFLOW_ID}
-          when: on_fail
-      - revert-migrations:
-          id: ${CIRCLE_WORKFLOW_ID}
-          when: on_fail      
+      - destroy-environment
+      - revert-migrations    
                     
   deploy-backend:
     docker:
@@ -368,12 +358,8 @@ jobs:
           command: |
             cat inventory
             ansible-playbook -i inventory deploy-server.yaml -vv
-      - destroy-environment:
-          id: ${CIRCLE_WORKFLOW_ID}
-          when: on_fail
-      - revert-migrations:
-          id: ${CIRCLE_WORKFLOW_ID}
-          when: on_fail 
+      - destroy-environment
+      - revert-migrations
 
   smoke-test:
     docker:
@@ -400,12 +386,8 @@ jobs:
           command: |
             URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website.eu-central-1.amazonaws.com/index.html"
             curl -s ${URL} | grep -q "Welcome"
-      - destroy-environment:
-          id: ${CIRCLE_WORKFLOW_ID}
-          when: on_fail
-      - revert-migrations:
-          id: ${CIRCLE_WORKFLOW_ID}
-          when: on_fail
+      - destroy-environment
+      - revert-migrations
 
   cloudfront-update:
     docker:
@@ -436,9 +418,7 @@ jobs:
               --stack-name udapeople-cloudfront-production \
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}" \
               --tags project=udapeople
-      - revert-migrations:
-          id: ${CIRCLE_WORKFLOW_ID}
-          when: on_fail
+      - revert-migrations
 
   cleanup:
     docker:
