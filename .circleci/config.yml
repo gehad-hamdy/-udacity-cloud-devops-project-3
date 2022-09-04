@@ -208,7 +208,6 @@ jobs:
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
               --template-file .circleci/files/backend.yml \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}" \
-              --capabilities "CAPABILITY_IAM" "CAPABILITY_NAMED_IAM" \ 
               --region ${AWS_DEFAULT_REGION} \
               --tags project=udapeople-backend-${CIRCLE_WORKFLOW_ID}
       - run:
