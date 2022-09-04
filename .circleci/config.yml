@@ -3,17 +3,22 @@ version: 2.1
 commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    parameters:
+      when:
+        type: string
+      id:
+        type: string
     steps:
       - run:
           name: Destroy udapeople backend stack
           command: |
-           if aws cloudformation wait stack-exists --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID}
+           if aws cloudformation wait stack-exists --stack-name udapeople-backend-<< parameters.id >>
             then 
-             aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID}
+             aws cloudformation delete-stack --stack-name udapeople-backend-<< parameters.id >>
             fi
           environment:
             TERM: xterm-256color
-          when: on_fail
+          when: << parameters.when >>
       - run:
           name: Destroy udapeople frontend stack and S3 bucket
           command: |
@@ -21,26 +26,31 @@ commands:
             then 
               aws cloudformation delete-stack --stack-name udapeople-cloudfront-production
             fi 
-            if aws s3api head-bucket --bucket udapeople-${CIRCLE_WORKFLOW_ID}
+            if aws s3api head-bucket --bucket udapeople-<< parameters.id >>
             then
-              aws s3 rm s3://udapeople-${CIRCLE_WORKFLOW_ID}/ --recursive
+              aws s3 rm s3://udapeople-<< parameters.id >>/ --recursive
             fi
-            if aws cloudformation wait stack-exists --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID}
+            if aws cloudformation wait stack-exists --stack-name udapeople-frontend-<< parameters.id >>
             then 
-              aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID}
+              aws cloudformation delete-stack --stack-name udapeople-frontend-<< parameters.id >>
             fi
           environment:
               TERM: xterm-256color
-          when: on_fail  
+          when: << parameters.when >>  
 
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
+    parameters:
+      when:
+        type: string
+      id:
+        type: string
     steps:
       - run:
           name: Revert migrations
           working_directory: ./backend
           command: |
-            SUCCESS=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/DB_MIGRATION_${CIRCLE_WORKFLOW_ID})
+            SUCCESS=$(curl -H "token: << parameters.id >>" --request GET https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/DB_MIGRATION_<< parameters.id >>)
             echo $SUCCESS
             if [[ "$SUCCESS" == "success" ]]
             then
@@ -48,7 +58,7 @@ commands:
               ls -la
               npm run migrations:revert
             fi
-          when: on_fail
+          when: << parameters.when >>
             
 jobs:
   build-frontend:
@@ -239,7 +249,9 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      - destroy-environment
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID}
+          when: on_fail  
 
   configure-infrastructure:
     docker:
@@ -264,7 +276,9 @@ jobs:
             ls -la
             cat inventory.txt
             ansible-playbook -i inventory.txt configure-server.yml
-      - destroy-environment
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID}
+          when: on_fail
 
   run-migrations:
     docker:
@@ -299,7 +313,9 @@ jobs:
               curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data "failure" https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/DB_MIGRATION_${CIRCLE_WORKFLOW_ID}
             fi
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID}"
-      - destroy-environment
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID}
+          when: on_fail
 
   deploy-frontend:
     docker:
@@ -332,8 +348,12 @@ jobs:
           root: .
           paths:
             - frontend/dist
-      - destroy-environment
-      - revert-migrations    
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID}
+          when: on_fail
+      - revert-migrations:
+          id: ${CIRCLE_WORKFLOW_ID}
+          when: on_fail      
                     
   deploy-backend:
     docker:
@@ -358,8 +378,12 @@ jobs:
           command: |
             cat inventory
             ansible-playbook -i inventory deploy-server.yaml -vv
-      - destroy-environment
-      - revert-migrations
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID}
+          when: on_fail
+      - revert-migrations:
+          id: ${CIRCLE_WORKFLOW_ID}
+          when: on_fail 
 
   smoke-test:
     docker:
@@ -386,8 +410,12 @@ jobs:
           command: |
             URL="http://udapeople-${CIRCLE_WORKFLOW_ID}.s3-website.eu-central-1.amazonaws.com/index.html"
             curl -s ${URL} | grep -q "Welcome"
-      - destroy-environment
-      - revert-migrations
+      - destroy-environment:
+          id: ${CIRCLE_WORKFLOW_ID}
+          when: on_fail
+      - revert-migrations:
+          id: ${CIRCLE_WORKFLOW_ID}
+          when: on_fail
 
   cloudfront-update:
     docker:
@@ -418,7 +446,9 @@ jobs:
               --stack-name udapeople-cloudfront-production \
               --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID}" \
               --tags project=udapeople
-      - revert-migrations
+      - revert-migrations:
+          id: ${CIRCLE_WORKFLOW_ID}
+          when: on_fail
 
   cleanup:
     docker:
