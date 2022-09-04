@@ -202,10 +202,11 @@ jobs:
             ls /root
       - run:
           name: Deploy backend infrastructure
+          # working_directory: ./.circleci/files
           command: |
             aws cloudformation deploy \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
-              --template-file /home/gehad/courses/udicity/project3/udacity-cloud-devops-project-3/.circleci/files/backend.yml \
+              --template-file .circleci/files/backend.yml \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}" \
               --capabilities "CAPABILITY_IAM" "CAPABILITY_NAMED_IAM" \ 
               --region ${AWS_DEFAULT_REGION} \
