@@ -196,53 +196,21 @@ jobs:
           working_directory: ./backend
           command: npm audit fix --audit-level=critical
 
-  create-new-infrastructure:
+  deploy-infrastructure:
     docker:
       - image: amazon/aws-cli
     steps:
       - checkout
       - run:
-          name: Create/Update frontend infrastructure via AWS CloudFormation
-          command: |
-            aws cloudformation deploy \
-              --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID} \
-              --template-file .circleci/files/frontend.yml \
-              --region ${AWS_DEFAULT_REGION} \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
-      - run:
-          name: Create/Update backend infrastructure via AWS CloudFormation
-          command: |
-            aws cloudformation deploy \
-              --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID} \
-              --template-file .circleci/files/backend.yml \
-              --region ${AWS_DEFAULT_REGION} \
-              --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}"
-      - run:
-          name: Get and save public DNS of EC2 instance to https://memstash.io/
-          command: |
-            PUBLIC_DNS=$(aws ec2 describe-instances --region ${AWS_DEFAULT_REGION} --filters 'Name=tag:Name,Values=udapeople-backend-ec2-*' --query "Reservations[*].Instances[0].PublicDnsName" --output text)
-            echo ${PUBLIC_DNS}
-            curl -H "Content-Type: text/plain" \
-               -H "token: ${CIRCLE_WORKFLOW_ID}" \
-               --request PUT \
-               --data ${PUBLIC_DNS} \
-               https://api.memstash.io/values/public_dns
-      - destroy-environment
-
-  deploy-infrastructure:
-    docker:
-      - image: amazon/aws-cli
-    steps:
-      - run:
           name: Install dependencies
           command: yum install -y tar gzip
       - run:
           name: Deploy backend infrastructure
-          # working_directory: ./.circleci/files
+          working_directory: ./.circleci/files
           command: |
             aws cloudformation deploy \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
-              --template-file .circleci/files/backend.yml \
+              --template-file backend.yml \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}" \
               --capabilities "CAPABILITY_IAM" "CAPABILITY_NAMED_IAM" \ 
               --region ${AWS_DEFAULT_REGION} \
@@ -514,13 +482,13 @@ workflows:
           requires: [build-backend]
       - scan-frontend:
           requires: [build-frontend]
-      - create-new-infrastructure:
+      - deploy-infrastructure:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
             branches:
               only: [master]
       - configure-infrastructure:
-          requires: [create-new-infrastructure]
+          requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
       - deploy-frontend:
