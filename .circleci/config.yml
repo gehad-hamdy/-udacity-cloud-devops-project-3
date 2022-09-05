@@ -339,8 +339,6 @@ jobs:
                     --filters "Name=tag:project,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
                     --output text)
             echo "${BACKEND_URL}"
-            echo "API_URL=http://${BACKEND_URL}:3030" >> frontend/.env
-            cat frontend/.env
             npm run build
       - run:
           name: Deploy frontend objects
@@ -367,6 +365,10 @@ jobs:
           fingerprints: ["1c:6f:48:59:56:22:54:de:98:31:ac:af:9b:22:1e:f6:95:62:4e:b9"]
       - attach_workspace:
           at: .
+      - run: 
+          name: Install node dependencies
+          working_directory: ./backend
+          command: npm install
       - run:
           name: Install dependencies
           working_directory: /tmp
@@ -379,8 +381,12 @@ jobs:
           name: Deploy backend
           working_directory: ./.circleci/ansible
           command: |
-            cat inventory
-            ansible-playbook -i inventory deploy-server.yaml -vv
+            export TYPEORM_MIGRATIONS_DIR=./migrations
+            export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
+            export TYPEORM_MIGRATIONS=./migrations/*.ts
+
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-server.yaml -vv
       - destroy-environment:
           id: ${CIRCLE_WORKFLOW_ID}
           when: on_fail
