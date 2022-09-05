@@ -305,13 +305,10 @@ jobs:
           name: Send migration results to kvdb
           working_directory: ./backend
           command: |
-            if grep -q "has been executed successfully" migrations_status
+            if grep -q "has been executed successfully" migration_status
             then
               echo "DB migration was successful, will update kvdb..."
               curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data "success" https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/DB_MIGRATION_${CIRCLE_WORKFLOW_ID}
-            else
-              echo "DB migration failed, please verify setup! Probably the database already exists. Verify setup!"
-              curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data "failure" https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/DB_MIGRATION_${CIRCLE_WORKFLOW_ID}
             fi
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID}"
       - destroy-environment:
