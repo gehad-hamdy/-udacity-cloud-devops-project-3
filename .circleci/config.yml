@@ -50,7 +50,7 @@ commands:
           name: Revert migrations
           working_directory: ./backend
           command: |
-            SUCCESS=$(curl -H "token: << parameters.id >>" --request GET https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/DB_MIGRATION_<< parameters.id >>)
+            SUCCESS=$(curl https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/DB_MIGRATION_<< parameters.id >>)
             echo $SUCCESS
             if [[ "$SUCCESS" == "success" ]]
             then
@@ -365,10 +365,6 @@ jobs:
           fingerprints: ["1c:6f:48:59:56:22:54:de:98:31:ac:af:9b:22:1e:f6:95:62:4e:b9"]
       - attach_workspace:
           at: .
-      - run: 
-          name: Install node dependencies
-          working_directory: ./backend
-          command: npm install
       - run:
           name: Install dependencies
           working_directory: /tmp
