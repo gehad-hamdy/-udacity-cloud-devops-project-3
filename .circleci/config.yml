@@ -294,22 +294,18 @@ jobs:
             sudo apt-get update && sudo apt-get install -yy less
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
-            sudo ./aws/install    
-      - run:
-          name: Install dependencies
-          command: |
-            cd backend
-            npm install         
+            sudo ./aws/install          
       - run:
           name: Run migrations
-          working_directory: ./backend/src
+          working_directory: ./backend
           command: |
-            npm run migrations > migration_status
+            npm install  
+            npm run migrations > migrations_dump.text
       - run:
           name: Send migration results to kvdb
           working_directory: ./backend
           command: |
-            if grep -q "has been executed successfully" migration_status
+            if grep -q "has been executed successfully" ~project/backend/migrations_dump.text
             then
               echo "DB migration was successful, will update kvdb..."
               curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data "success" https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/DB_MIGRATION_${CIRCLE_WORKFLOW_ID}
