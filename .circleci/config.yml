@@ -300,12 +300,12 @@ jobs:
           working_directory: ./backend
           command: |
             npm install  
-            npm run migrations > migrations_dump.text
+            npm run migrations > migrations_status
       - run:
           name: Send migration results to kvdb
           working_directory: ./backend
           command: |
-            if grep -q "has been executed successfully" ~project/backend/migrations_dump.text
+            if grep -q "has been executed successfully" migrations_status
             then
               echo "DB migration was successful, will update kvdb..."
               curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data "success" https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/DB_MIGRATION_${CIRCLE_WORKFLOW_ID}
