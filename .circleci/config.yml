@@ -222,7 +222,7 @@ jobs:
               --output text)
               echo ${BACKEND_URL} >> .circleci/ansible/inventory.txt
               cat .circleci/ansible/inventory.txt
-              curl https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/BACKEND_URL -d ${BACKEND_URL}
+              curl -d ${BACKEND_URL} https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/BACKEND_URL 
       - run:
           name: Deploy frontend infrastructure
           working_directory: ./.circleci/files
@@ -290,7 +290,7 @@ jobs:
             sudo apt-get update && sudo apt-get install -yy less
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
-            sudo ./aws/install python3 -m pip install --user ansible         
+            sudo ./aws/install         
       - run:
           name: Run migrations
           working_directory: ./backend
@@ -304,7 +304,7 @@ jobs:
             if grep -q "has been executed successfully" migration_status
             then
               echo "DB migration was successful, will update kvdb..."
-              curl https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/DB_MIGRATION_${CIRCLE_WORKFLOW_ID} -d "success"
+              curl -d "success" https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/DB_MIGRATION_${CIRCLE_WORKFLOW_ID} 
             fi
             echo "WorkflowID=${CIRCLE_WORKFLOW_ID}"
       - destroy-environment:
@@ -392,7 +392,7 @@ jobs:
 
   smoke-test:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: python:3.7-alpine3.14
     steps:
       - checkout
       - attach_workspace:
@@ -450,7 +450,7 @@ jobs:
             WorkflowID=$(aws cloudformation \
               list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
               --no-paginate --output text)      
-              curl https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/WorkflowID -d "$WorkflowID"
+              curl -d "$WorkflowID" https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/WorkflowID 
 
       - run:
           name: Update cloudfront distribution
@@ -473,7 +473,7 @@ jobs:
       - run:
           name: Remove old stacks and files
           command: |
-            OldWorkflowID=$(curl -H "token: ${CIRCLE_WORKFLOW_ID}" --request GET https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/WorkflowID)
+            OldWorkflowID=$(curl https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/WorkflowID)
             CurrentWorkflowID=${CIRCLE_WORKFLOW_ID}
             if [[ "$CurrentWorkflowID" != "$OldWorkflowID" ]]
             then
