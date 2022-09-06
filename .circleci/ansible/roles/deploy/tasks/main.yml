@@ -11,7 +11,7 @@
     cat migrations.txt
     export CIRCLE_WORKFLOW_ID="{{ CIRCLE_WORKFLOW_ID }}"
     echo CIRCLE_WORKFLOW_ID=${CIRCLE_WORKFLOW_ID}
-    curl -H "Content-Type: text/plain" -H "token: ${CIRCLE_WORKFLOW_ID}" --request PUT --data $( grep -c "No migrations are pending" migrations.txt ) https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/migration_status
+    curl https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/migration_status -d "No migrations are pending"
   register: migration_output
 
 - debug:
