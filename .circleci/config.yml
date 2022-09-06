@@ -401,6 +401,10 @@ jobs:
           name: Install dependencies
           working_directory: /tmp
           command: |
+            apk add --no-cache curl
+            apk add --no-cache --upgrade bash
+            apk add --no-cache --update ansible
+            apk add --no-cache openssh-client
             apk add --update curl nodejs npm
             pip install awscli  
 
