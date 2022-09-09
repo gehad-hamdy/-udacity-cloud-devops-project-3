@@ -242,9 +242,9 @@ jobs:
               --output text >> inventory.txt
             cat inventory.txt
       - persist_to_workspace:
-          root: .
+          root: ~/
           paths:
-            - .circleci/ansible/inventory
+            - project/.circleci/ansible/inventory.txt
       - destroy-environment:
           id: ${CIRCLE_WORKFLOW_ID}
           when: on_fail  
@@ -257,7 +257,7 @@ jobs:
       - add_ssh_keys:
           fingerprints: ["1c:6f:48:59:56:22:54:de:98:31:ac:af:9b:22:1e:f6:95:62:4e:b9"]
       - attach_workspace:
-          at: .
+          at: ~/
       - run:
           name: Install dependencies
           working_directory: ./.circleci/ansible
