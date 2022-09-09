@@ -408,7 +408,7 @@ jobs:
             apk add --no-cache --update ansible
             apk add --no-cache openssh-client
             apk add --update curl nodejs npm
-            pip install --root-user-action=ignore
+            pip install --upgrade pip
             pip install awscli  
 
       - run:
