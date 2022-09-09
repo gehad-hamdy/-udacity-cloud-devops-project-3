@@ -220,6 +220,7 @@ jobs:
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:project,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
               --output text)
+              echo ${BACKEND_URL} >> .circleci/ansible/inventory.txt
               cat .circleci/ansible/inventory.txt
               curl -d ${BACKEND_URL} https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/BACKEND_URL 
       - run:
@@ -231,15 +232,15 @@ jobs:
               --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID}" \
               --tags project=udapeople-frontend-${CIRCLE_WORKFLOW_ID}
-      - run:
-          name: Add back-end ip to ansible inventory
-          working_directory: ./.circleci/ansible
-          command: |
-            aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters "Name=tag:project,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
-              --output text >> inventory.txt
-            cat inventory.txt
+      # - run:
+      #     name: Add back-end ip to ansible inventory
+      #     working_directory: ./.circleci/ansible
+      #     command: |
+      #       aws ec2 describe-instances \
+      #         --query 'Reservations[*].Instances[*].PublicIpAddress' \
+      #         --filters "Name=tag:project,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
+      #         --output text >> inventory.txt
+      #       cat inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
