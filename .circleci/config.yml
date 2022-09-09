@@ -372,11 +372,9 @@ jobs:
             apk add --update ansible curl rsync openssh nodejs npm
             echo "get ansible version"
             ansible --version
+            pip install --upgrade pip
             pip install awscli
-            echo "get aws version"
             aws --version
-            echo "get python version"
-            python --version
       - run:
           name: Deploy backend
           working_directory: ./.circleci/ansible
@@ -410,6 +408,7 @@ jobs:
             apk add --no-cache --update ansible
             apk add --no-cache openssh-client
             apk add --update curl nodejs npm
+            pip install --root-user-action=ignore
             pip install awscli  
 
       - run:
