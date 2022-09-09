@@ -370,11 +370,13 @@ jobs:
           working_directory: /tmp
           command: |
             apk add --update ansible curl rsync openssh nodejs npm
-            apk add --no-cache aws-cli
+            echo "get ansible version"
+            ansible --version
+            pip install awscli
+            echo "get aws version"
             aws --version
+            echo "get python version"
             python --version
-            python -m pip install ansible
-            ansible --verion
       - run:
           name: Deploy backend
           working_directory: ./.circleci/ansible
