@@ -358,7 +358,7 @@ jobs:
                     
   deploy-backend:
     docker:
-      - image: python:3.7-alpine3.14
+      - image: python:3.10-alpine3.14
     steps:
       - checkout
       - add_ssh_keys:
@@ -369,10 +369,14 @@ jobs:
           name: Install dependencies
           working_directory: /tmp
           command: |
+            apk add --no-cache aws-cli
             apk add --update ansible curl rsync openssh nodejs npm
-            ansible --version
-            pip install awscli
+            # ansible --version
+            # pip install awscli
             aws --version
+            python --version
+            python -m pip install ansible
+            ansible --verion
       - run:
           name: Deploy backend
           working_directory: ./.circleci/ansible
@@ -392,7 +396,7 @@ jobs:
 
   smoke-test:
     docker:
-      - image: python:3.7-alpine3.14
+      - image: python:3.10-alpine3.14
     steps:
       - checkout
       - attach_workspace:
