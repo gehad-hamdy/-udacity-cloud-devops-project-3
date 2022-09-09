@@ -214,14 +214,16 @@ jobs:
               --region ${AWS_DEFAULT_REGION} \
               --tags project=udapeople-backend-${CIRCLE_WORKFLOW_ID}
       - run:
-          name: Save backend URL in kvdb
+          name: Save backend URL ansible inventory and in kvdb
+          working_directory: ./.circleci/ansible
           command: |
             BACKEND_URL=$(aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:project,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
               --output text)
-              echo ${BACKEND_URL} >> .circleci/ansible/inventory.txt
-              cat .circleci/ansible/inventory.txt
+              echo $'\n' >> inventory.txt
+              echo ${BACKEND_URL} >> inventory.txt
+              cat inventory.txt
               curl -d ${BACKEND_URL} https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/BACKEND_URL 
       - run:
           name: Deploy frontend infrastructure
