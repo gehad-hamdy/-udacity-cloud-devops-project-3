@@ -17,13 +17,3 @@
     global: yes
     production: yes
     state: latest
-
-# - name: "copy files from CircleCI to server"
-#   copy:
-#     src: /root/project/backend
-#     dest: /home/ubuntu
-
-# - name: "install package dependencies"
-#   shell: |
-#     cd /home/ubuntu/backend    
-#     npm install 

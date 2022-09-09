@@ -1,23 +1,39 @@
+---
+  - name: "show remote environment"
+    shell: env
 
+  - name: "copy backend binaries"
+    become: true
+    synchronize:
+      src: ../../backend/dist
+      dest: /home/ubuntu/uda_app
+      recursive: true
 
-- name: "build package"
-  shell: |
-    cd /home/ubuntu/backend
-    npm run build
-- name: "run migrations and save status to https://kvdb.io"
-  shell: |
-    cd /home/ubuntu/backend
-    npm run migrations > migrations.txt
-    cat migrations.txt
-    export CIRCLE_WORKFLOW_ID="{{ CIRCLE_WORKFLOW_ID }}"
-    echo CIRCLE_WORKFLOW_ID=${CIRCLE_WORKFLOW_ID}
-    curl https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/migration_status -d "No migrations are pending"
-  register: migration_output
+  - name: "copy node_modules"
+    become: true
+    synchronize:
+      src: ../../backend/node_modules
+      dest: /home/ubuntu/uda_app
+      recursive: true
 
-- debug:
-    msg: "{{ migration_output.stdout_lines }}"
+  - name: "delete anything that might already be running"
+    become: true
+    command: pm2 delete all
+    ignore_errors: true
 
-- name: "use pm2 to run the node server"
-  shell: |
-    cd /home/ubuntu/backend
-    pm2 start npm -- run "start:dev"
+  - name: "start server"
+    become: true
+    command: pm2 start -f ./main.js
+    args:
+      chdir: /home/ubuntu/uda_app/dist
+    environment:
+     ENVIRONMENT: production
+     TYPEORM_CONNECTION: "{{ lookup('env', 'TYPEORM_CONNECTION') }}"
+     TYPEORM_MIGRATIONS_DIR: "./migrations"
+     TYPEORM_MIGRATIONS: "./migrations/*.js"
+     TYPEORM_ENTITIES: "./modules/domain/**/*.entity{.ts,.js}"
+     TYPEORM_HOST: "{{ lookup('env', 'TYPEORM_HOST') }}"
+     TYPEORM_PORT: "{{ lookup('env', 'TYPEORM_PORT') }}"
+     TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME') }}"
+     TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD') }}"
+     TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE') }}"
