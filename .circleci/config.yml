@@ -1,6 +1,17 @@
 version: 2.1
 
 commands:
+  install_ansible:
+    description: install ansible v2.
+    steps:
+      - run:
+          name: install ansible v2
+          command: |
+            sudo apt update
+            sudo apt install software-properties-common
+            sudo add-apt-repository --yes --update ppa:ansible/ansible
+            sudo apt install ansible
+
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
@@ -243,19 +254,24 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: cimg/python:3.10
+      - image: cimg/base:stable
     steps:
       - checkout
+      - install_ansible
       - add_ssh_keys:
           fingerprints: ["1c:6f:48:59:56:22:54:de:98:31:ac:af:9b:22:1e:f6:95:62:4e:b9"]
       - attach_workspace:
           at: ~/
-      - run:
-          name: Install dependencies
-          working_directory: ./.circleci/ansible
-          command: |
-            python3 -m pip install --user ansible
-            ansible --version
+      # - run:
+      #     name: Install dependencies
+      #     working_directory: ./.circleci/ansible
+      #     command: |
+      #       sudo apt update
+      #       sudo apt install software-properties-common
+      #       sudo add-apt-repository --yes --update ppa:ansible/ansible
+      #       sudo apt install ansible 
+
+      #       ansible --version
       - run:
           name: Configure server
           working_directory: ./.circleci/ansible
@@ -361,13 +377,17 @@ jobs:
           name: Install dependencies
           working_directory: /tmp
           command: |
-            python3 -m pip install --user ansible
-            echo "get ansible version"
-            ansible --version
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
             aws --version
+            sudo apt update
+            sudo apt install software-properties-common
+            sudo add-apt-repository --yes --update ppa:ansible/ansible
+            sudo apt install ansible 
+
+            echo "get ansible version"
+            ansible --version
       - run:
           name: Deploy backend
           working_directory: ./.circleci/ansible
@@ -399,7 +419,10 @@ jobs:
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
-            python3 -m pip install --user ansible
+            sudo apt update
+            sudo apt install software-properties-common
+            sudo add-apt-repository --yes --update ppa:ansible/ansible
+            sudo apt install ansible 
       - run:
           name: Backend smoke test.
           working_directory: ./backend
