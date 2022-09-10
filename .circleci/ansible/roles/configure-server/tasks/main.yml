@@ -1,13 +1,8 @@
 - name: "install node 13.X"
   shell: |
-    curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
-    sudo apt -y upgrade
-    sudo apt install -y nodejs
-
-- name: Switch Node.js to 13.8.0 with n
-  become: true
-  shell: |
-    sudo npm install --global n
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+    sudo apt-get install -y nodejs
+    sudo npm install -g n
     sudo n 13.8.0
 
 - name: "install pm2 by npm"
@@ -15,5 +10,3 @@
   npm:
     name: pm2
     global: yes
-    production: yes
-    state: latest
