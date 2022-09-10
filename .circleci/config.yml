@@ -315,7 +315,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: [frontend-deps]
+          keys: [frontend-deps]
       - run:
           name: Install dependencies
           working_directory: /tmp
@@ -365,7 +365,7 @@ jobs:
       - attach_workspace:
           at: ~/
       - restore_cache:
-          key: [backend-deps]    
+          keys: [backend-deps]    
       - run:
           name: Install dependencies
           working_directory: /tmp
