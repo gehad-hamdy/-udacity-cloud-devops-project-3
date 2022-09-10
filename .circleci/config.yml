@@ -12,6 +12,15 @@ commands:
             sudo add-apt-repository --yes --update ppa:ansible/ansible
             sudo apt install ansible -y
 
+  install_nodejs:       
+    description: install nodejs 13
+    steps:
+      - run:
+          name: install nodejs
+          command: |
+            curl -fsSL https://deb.nodesource.com/setup_13.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
@@ -337,16 +346,18 @@ jobs:
                     --filters "Name=tag:project,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
                     --output text)
             echo "${BACKEND_URL}"
-            npm run build
+            echo "API_URL=http://${BACKEND_PUBLIC_IP}:3030" >> frontend/.env
+            cat frontend/.env
       - run:
           name: Deploy frontend objects
           working_directory: ./frontend
           command: |
+            npm run build
             aws s3 cp ./dist "s3://udapeople-${CIRCLE_WORKFLOW_ID}" --recursive
-      - persist_to_workspace:
-          root: .
-          paths:
-            - frontend/dist
+      # - persist_to_workspace:
+      #     root: .
+      #     paths:
+      #       - frontend/dist
       - destroy-environment:
           id: ${CIRCLE_WORKFLOW_ID}
           when: on_fail
@@ -356,10 +367,11 @@ jobs:
                     
   deploy-backend:
     docker:
-      - image: circleci/node:13.8.0
+      - image: cimg/base:stable
     steps:
       - checkout
       - install_ansible
+      - install_nodejs
       - add_ssh_keys:
           fingerprints: ["59:29:1f:5c:69:7a:3c:93:68:64:ac:5e:12:53:af:de"]
       - attach_workspace:
@@ -374,6 +386,20 @@ jobs:
             unzip awscliv2.zip
             sudo ./aws/install
             aws --version
+      - run:
+          name: install node dependancies
+          command: |
+            cd backend
+            npm install
+      - run:
+          name: Package Backend
+          command: |
+            cd backend
+            npm run build
+            tar -czf artifact.tar.gz dist/* package*
+
+            cd ..
+            cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
       - run:
           name: Deploy backend
           working_directory: ./.circleci/ansible
