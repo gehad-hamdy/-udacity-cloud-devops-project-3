@@ -433,9 +433,9 @@ jobs:
             export API_URL=http://${BACKEND_URL}:3030
             if curl -s $API_URL/api/status | grep "ok" 
             then   
-              exit 1
+              exit 0
             else
-              exit 2
+              exit 1
             fi      
       - run:
           name: Frontend smoke test.
@@ -458,24 +458,20 @@ jobs:
 
   cloudfront-update:
     docker:
-      - image: amazon/aws-cli
+      - image: cimg/base:stable
     steps:
       - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            yum install -y tar gzip curl
-            curl -sL https://rpm.nodesource.com/setup_10.x | bash -
-            yum install -y nodejs
+      - install_awscli
+      - install_nodejs
       - run:
           name: Store old WorkflowID in kvdb for cleanup phase
           working_directory: ./.circleci/files
           command: |
-            WorkflowID=$(aws cloudformation \
+            OldWorkflowID=$(aws cloudformation \
               list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
-              --no-paginate --output text)      
-              curl -d "$WorkflowID" https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/WorkflowID 
-
+              --no-paginate --output text)     
+              echo "old work flow id = ${OldWorkflowID}" 
+              curl -d "${OldWorkflowID}" https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/old_work_flow_id 
       - run:
           name: Update cloudfront distribution
           working_directory: ./.circleci/files
@@ -491,14 +487,18 @@ jobs:
 
   cleanup:
     docker:
-     - image: amazon/aws-cli
+     - image: cimg/base:stable
     steps:
       - checkout
+      - install_awscli
+      - install_nodejs
       - run:
           name: Remove old stacks and files
           command: |
-            OldWorkflowID=$(curl https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/WorkflowID)
+            OldWorkflowID=$(curl https://kvdb.io/NNui4biz8Xuh42cgFYqD5t/old_work_flow_id)
             CurrentWorkflowID=${CIRCLE_WORKFLOW_ID}
+            echo "old work flow id = $OldWorkflowID"
+            echo "current work flow id = $CurrentWorkflowID"
             if [[ "$CurrentWorkflowID" != "$OldWorkflowID" ]]
             then
               echo "$OldWorkflowID!=$CurrentWorkflowID => will delete old version"
@@ -508,10 +508,7 @@ jobs:
             else
               echo "$OldWorkflowID==$CurrentWorkflowID => nothing needs to be done..."
             fi
-          environment:
-            TERM: xterm-256color
-            
-
+          
 workflows:
   default:
     jobs:
