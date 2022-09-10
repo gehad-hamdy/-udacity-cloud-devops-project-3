@@ -2,15 +2,15 @@ version: 2.1
 
 commands:
   install_ansible:
-    description: install ansible v2.
+    description: install ansible.
     steps:
       - run:
-          name: install ansible v2
+          name: install ansible
           command: |
             sudo apt update
-            sudo apt install software-properties-common
+            sudo apt install software-properties-common -y
             sudo add-apt-repository --yes --update ppa:ansible/ansible
-            sudo apt install ansible
+            sudo apt install ansible -y
 
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -259,19 +259,9 @@ jobs:
       - checkout
       - install_ansible
       - add_ssh_keys:
-          fingerprints: ["1c:6f:48:59:56:22:54:de:98:31:ac:af:9b:22:1e:f6:95:62:4e:b9"]
+          fingerprints: ["59:29:1f:5c:69:7a:3c:93:68:64:ac:5e:12:53:af:de"]
       - attach_workspace:
           at: ~/
-      # - run:
-      #     name: Install dependencies
-      #     working_directory: ./.circleci/ansible
-      #     command: |
-      #       sudo apt update
-      #       sudo apt install software-properties-common
-      #       sudo add-apt-repository --yes --update ppa:ansible/ansible
-      #       sudo apt install ansible 
-
-      #       ansible --version
       - run:
           name: Configure server
           working_directory: ./.circleci/ansible
@@ -324,8 +314,8 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
-      - attach_workspace:
-          at: .
+      - restore_cache:
+          key: [frontend-deps]
       - run:
           name: Install dependencies
           working_directory: /tmp
@@ -366,13 +356,16 @@ jobs:
                     
   deploy-backend:
     docker:
-      - image: cimg/python:3.10
+      - image: circleci/node:13.8.0
     steps:
       - checkout
+      - install_ansible
       - add_ssh_keys:
-          fingerprints: ["1c:6f:48:59:56:22:54:de:98:31:ac:af:9b:22:1e:f6:95:62:4e:b9"]
+          fingerprints: ["59:29:1f:5c:69:7a:3c:93:68:64:ac:5e:12:53:af:de"]
       - attach_workspace:
-          at: .
+          at: ~/
+      - restore_cache:
+          key: [backend-deps]    
       - run:
           name: Install dependencies
           working_directory: /tmp
@@ -381,20 +374,13 @@ jobs:
             unzip awscliv2.zip
             sudo ./aws/install
             aws --version
-            sudo apt update
-            sudo apt install software-properties-common
-            sudo add-apt-repository --yes --update ppa:ansible/ansible
-            sudo apt install ansible 
-
-            echo "get ansible version"
-            ansible --version
       - run:
           name: Deploy backend
           working_directory: ./.circleci/ansible
           command: |
             export TYPEORM_MIGRATIONS_DIR=./migrations
             export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
-            export TYPEORM_MIGRATIONS=./migrations/*{.ts,.js}
+            export TYPEORM_MIGRATIONS=./migrations/*.ts
 
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
