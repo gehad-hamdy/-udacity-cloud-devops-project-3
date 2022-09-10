@@ -346,8 +346,8 @@ jobs:
                     --filters "Name=tag:project,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
                     --output text)
             echo "${BACKEND_URL}"
-            echo "API_URL=http://${BACKEND_PUBLIC_IP}:3030" >> frontend/.env
-            cat frontend/.env
+            echo "API_URL=http://${BACKEND_PUBLIC_IP}:3030" >> .env
+            cat .env
       - run:
           name: Deploy frontend objects
           working_directory: ./frontend
