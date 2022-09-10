@@ -3,6 +3,9 @@
 - name: "deployment play." 
   hosts: web
   user: ubuntu
+  become: true
+  become_method: sudo
+  become_user: root  
   gather_facts: false
   vars:
     - ansible_python_interpreter: /usr/bin/python3
@@ -19,11 +22,8 @@
       raw: test -e /usr/bin/python3 || (apt -y update && apt install -y python)
       changed_when: false
 
-    - setup:  
+    - setup:   
   
-  roles:
-    - deploy
-    
   environment:
     NODE_ENV: production
     VERSION: "1"
@@ -36,3 +36,6 @@
     TYPEORM_USERNAME: "{{ lookup('env', 'TYPEORM_USERNAME') }}"
     TYPEORM_PASSWORD: "{{ lookup('env', 'TYPEORM_PASSWORD') }}"
     TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE') }}"
+
+  roles:
+    - deploy

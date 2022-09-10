@@ -21,6 +21,17 @@ commands:
             curl -fsSL https://deb.nodesource.com/setup_13.x | sudo -E bash -
             sudo apt-get install -y nodejs
 
+  install_awscli:
+    description: install aws cli
+    steps:
+      - run: 
+          name: install aws cli 
+          command: |
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+            aws --version
+
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
@@ -320,25 +331,19 @@ jobs:
 
   deploy-frontend:
     docker:
-      - image: circleci/node:13.8.0
+      - image: cimg/base:stable
     steps:
       - checkout
+      - install_awscli
+      - install_nodejs
       - restore_cache:
           keys: [frontend-deps]
       - run:
-          name: Install dependencies
-          working_directory: /tmp
-          command: |
-            sudo apt-get update && sudo apt-get install -yy less
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install
-      - run:
-          name: install dependancies
+          name: install node dependancies
           working_directory: ./frontend
           command: npm install
       - run:
-          name: Rebuild frontend and get backend API Url
+          name: get backend API Url and set to env file
           working_directory: ./frontend
           command: |
             export BACKEND_URL=$(aws ec2 describe-instances \
@@ -346,7 +351,7 @@ jobs:
                     --filters "Name=tag:project,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID}" \
                     --output text)
             echo "${BACKEND_URL}"
-            echo "API_URL=http://${BACKEND_PUBLIC_IP}:3030" >> .env
+            echo "API_URL=http://${BACKEND_URL}:3030" >> .env
             cat .env
       - run:
           name: Deploy frontend objects
@@ -370,6 +375,7 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
+      - install_awscli
       - install_ansible
       - install_nodejs
       - add_ssh_keys:
@@ -378,14 +384,6 @@ jobs:
           at: ~/
       - restore_cache:
           keys: [backend-deps]    
-      - run:
-          name: Install dependencies
-          working_directory: /tmp
-          command: |
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install
-            aws --version
       - run:
           name: install node dependancies
           command: |
